@@ -1,0 +1,6 @@
+{
+  "name": "broken-fixture",
+  "version": "0.0.1",
+  "description": "Fixture intentionally missing SKILL.md for compatibility tests.",
+  "targets": ["openai-agents"]
+}
