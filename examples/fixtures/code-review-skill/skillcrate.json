@@ -1,0 +1,12 @@
+{
+  "name": "careful-code-review",
+  "version": "0.2.0",
+  "description": "Review code changes with attention to correctness, tests, security, and user-facing behavior.",
+  "author": "Skillcrate contributors",
+  "license": "MIT",
+  "tags": ["review", "typescript", "quality"],
+  "targets": ["generic", "claude-code"],
+  "entry": "SKILL.md",
+  "attribution": "Original fixture inspired by common agent review workflows, not copied from another implementation.",
+  "safety": ["Never exfiltrate repository secrets", "Flag destructive commands before recommending them"]
+}
