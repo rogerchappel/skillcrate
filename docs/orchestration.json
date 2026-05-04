@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "openclaw-orchestration/v1",
+  "project": "skillcrate",
+  "lanes": [
+    { "name": "format", "status": "complete", "outputs": ["src/types.ts", "docs/PRD.md"] },
+    { "name": "cli-library", "status": "complete", "outputs": ["src/cli.ts", "src/index.ts"] },
+    { "name": "quality", "status": "complete", "outputs": ["test", "scripts/validate.sh", ".github/workflows/ci.yml"] },
+    { "name": "docs", "status": "complete", "outputs": ["README.md", "CONTRIBUTING.md", "SECURITY.md"] }
+  ],
+  "guardrails": ["local-first", "no telemetry", "no hidden network calls", "preserve attribution", "safe unpack paths"],
+  "verification": ["npm run check", "npm test", "npm run build", "npm run smoke", "bash scripts/validate.sh"]
+}
