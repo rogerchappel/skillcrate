@@ -1,0 +1,12 @@
+{
+  "name": "hello-agent-skill",
+  "version": "0.1.0",
+  "description": "A friendly fixture skill that teaches an agent to greet, scope, and summarize.",
+  "author": "Skillcrate contributors",
+  "license": "MIT",
+  "tags": ["fixture", "onboarding", "agent-skill"],
+  "targets": ["generic", "claude-code", "openai-agents"],
+  "entry": "SKILL.md",
+  "attribution": "Created as an original skillcrate fixture; the packaging concept acknowledges inspiration from the public skills ecosystem.",
+  "safety": ["No network calls", "No secrets required", "Deterministic local instructions only"]
+}
