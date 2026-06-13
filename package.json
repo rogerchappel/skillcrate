@@ -18,7 +18,10 @@
     "dist",
     "examples",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md"
   ],
   "scripts": {
     "check": "tsc --noEmit",
@@ -41,5 +44,13 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "typescript": "^5.9.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/skillcrate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/skillcrate/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/skillcrate#readme"
 }
