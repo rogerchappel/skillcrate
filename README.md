@@ -21,6 +21,7 @@ node dist/cli.js --help
 ```bash
 skillcrate inspect examples/fixtures/hello-skill
 skillcrate pack examples/fixtures/hello-skill .tmp/hello.skillcrate.json
+skillcrate verify .tmp/hello.skillcrate.json
 skillcrate unpack .tmp/hello.skillcrate.json .tmp/unpacked
 skillcrate index examples/fixtures .tmp/registry.json
 skillcrate check examples/fixtures/hello-skill --target claude-code
@@ -42,6 +43,7 @@ Packed crates are JSON documents with schema version `skillcrate/v1`, file conte
 
 - `inspect <skill-dir>`: print normalized metadata.
 - `pack <skill-dir> <out.skillcrate.json>`: create a portable crate.
+- `verify <crate-file>`: validate metadata, safe paths, byte counts, and SHA-256 digests without unpacking.
 - `unpack <crate-file> <out-dir>`: verify checksums and restore files.
 - `index <registry-root> <out.json>`: generate a registry index from fixture folders.
 - `check <skill-dir> --target <target>`: run compatibility checks for `generic`, `claude-code`, or `openai-agents`.
@@ -50,6 +52,7 @@ Packed crates are JSON documents with schema version `skillcrate/v1`, file conte
 
 - Local-first by design: no telemetry, publishing, or external API calls.
 - Unpack rejects path traversal and absolute archive paths.
+- Verify checks crates before writing files to disk.
 - Checksums are verified before files are written.
 - Compatibility reports encourage explicit attribution and safety boundaries.
 

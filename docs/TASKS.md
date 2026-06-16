@@ -8,6 +8,7 @@
 - [x] Unpack crate files with path-safety and checksum verification.
 - [x] Generate registry index JSON from fixture folders.
 - [x] Run compatibility checks for `generic`, `claude-code`, and `openai-agents`.
+- [x] Verify crate byte counts and digests without unpacking files.
 - [x] Add fixture skills and tests.
 - [x] Add real CLI smoke script.
 - [x] Document local-first safety boundaries.
