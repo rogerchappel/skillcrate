@@ -5,3 +5,4 @@ export * from './pack.js';
 export * from './unpack.js';
 export * from './registry.js';
 export * from './compat.js';
+export * from './verify.js';
