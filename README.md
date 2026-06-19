@@ -70,3 +70,9 @@ bash scripts/validate.sh
 ## Status
 
 MVP: metadata parsing, pack/unpack, registry export, compatibility checks, fixtures, tests, and CLI smoke.
+
+
+## Release readiness
+
+Use [docs/release-readiness.md](docs/release-readiness.md) before opening release PRs or tagging a release.
+
