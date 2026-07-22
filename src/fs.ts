@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { promises as fs } from 'node:fs';
+import { constants, promises as fs } from 'node:fs';
 import path from 'node:path';
 import { SkillcrateError } from './errors.js';
 
@@ -47,4 +47,74 @@ export async function readText(file: string): Promise<string> {
 export async function writeText(file: string, content: string): Promise<void> {
   await ensureDir(path.dirname(file));
   await fs.writeFile(file, content, 'utf8');
+}
+
+function isErrno(error: unknown, code: string): boolean {
+  return error instanceof Error && 'code' in error && error.code === code;
+}
+
+function assertWithinRoot(root: string, target: string): void {
+  const relative = path.relative(root, target);
+  if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new SkillcrateError(`Unsafe archive destination: ${target}`, 'UNSAFE_PATH');
+  }
+}
+
+export async function writeTextWithinRoot(root: string, relativePath: string, content: string): Promise<void> {
+  await ensureDir(root);
+  const resolvedRoot = await fs.realpath(root);
+  const parts = relativePath.split('/');
+  const fileName = parts.pop();
+  if (!fileName) throw new SkillcrateError(`Unsafe archive path: ${relativePath}`, 'UNSAFE_PATH');
+
+  let parent = resolvedRoot;
+  for (const part of parts) {
+    const next = path.join(parent, part);
+    try {
+      const stat = await fs.lstat(next);
+      if (stat.isSymbolicLink() || !stat.isDirectory()) {
+        throw new SkillcrateError(`Unsafe archive destination: ${relativePath}`, 'UNSAFE_PATH');
+      }
+    } catch (error) {
+      if (!isErrno(error, 'ENOENT')) throw error;
+      try {
+        await fs.mkdir(next);
+      } catch (mkdirError) {
+        if (!isErrno(mkdirError, 'EEXIST')) throw mkdirError;
+        const stat = await fs.lstat(next);
+        if (stat.isSymbolicLink() || !stat.isDirectory()) {
+          throw new SkillcrateError(`Unsafe archive destination: ${relativePath}`, 'UNSAFE_PATH');
+        }
+      }
+    }
+    parent = await fs.realpath(next);
+    assertWithinRoot(resolvedRoot, parent);
+  }
+
+  const destination = path.join(parent, fileName);
+  try {
+    const stat = await fs.lstat(destination);
+    if (stat.isSymbolicLink() || !stat.isFile()) {
+      throw new SkillcrateError(`Unsafe archive destination: ${relativePath}`, 'UNSAFE_PATH');
+    }
+  } catch (error) {
+    if (!isErrno(error, 'ENOENT')) throw error;
+  }
+
+  let handle;
+  try {
+    handle = await fs.open(
+      destination,
+      constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW,
+      0o666
+    );
+    await handle.writeFile(content, 'utf8');
+  } catch (error) {
+    if (isErrno(error, 'ELOOP')) {
+      throw new SkillcrateError(`Unsafe archive destination: ${relativePath}`, 'UNSAFE_PATH');
+    }
+    throw error;
+  } finally {
+    await handle?.close();
+  }
 }
