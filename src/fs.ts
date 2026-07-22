@@ -19,8 +19,30 @@ export function sha256(content: string): string {
 
 export function safeRelativePath(input: string): string {
   const normalized = path.posix.normalize(input.replaceAll('\\', '/'));
-  if (normalized.startsWith('../') || normalized === '..' || path.isAbsolute(input)) {
+  if (normalized === '.' || normalized.startsWith('../') || normalized === '..' || path.isAbsolute(input)) {
     throw new SkillcrateError(`Unsafe archive path: ${input}`, 'UNSAFE_PATH');
+  }
+  return normalized;
+}
+
+export function validateArchivePaths(inputs: string[]): string[] {
+  const normalized = inputs.map(safeRelativePath);
+  const destinations = new Set<string>();
+  for (const destination of normalized) {
+    if (destinations.has(destination)) {
+      throw new SkillcrateError(`Duplicate archive destination: ${destination}`, 'INVALID_MANIFEST');
+    }
+    destinations.add(destination);
+  }
+
+  for (const destination of normalized) {
+    const parts = destination.split('/');
+    for (let index = 1; index < parts.length; index += 1) {
+      const parent = parts.slice(0, index).join('/');
+      if (destinations.has(parent)) {
+        throw new SkillcrateError(`Conflicting archive destinations: ${parent} and ${destination}`, 'INVALID_MANIFEST');
+      }
+    }
   }
   return normalized;
 }
