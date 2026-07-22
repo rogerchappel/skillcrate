@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { packSkill, packSkillToFile, SkillManifest, unpackSkill, unpackSkillFromFile } from '../src/index.js';
+import { packSkill, packSkillToFile, parseManifest, SkillManifest, unpackSkill, unpackSkillFromFile } from '../src/index.js';
 
 function manifestWithFile(filePath: string, content: string): SkillManifest {
   return {
@@ -89,4 +89,20 @@ test('refuses to replace a symlinked destination file', async () => {
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+});
+
+test('rejects duplicate and conflicting archive destinations before unpacking', () => {
+  const first = manifestWithFile('nested/../file.txt', 'first');
+  const duplicate = manifestWithFile('file.txt', 'second').files[0];
+  assert.throws(
+    () => parseManifest(JSON.stringify({ ...first, files: [...first.files, duplicate] })),
+    (error: unknown) => error instanceof Error && 'code' in error && error.code === 'INVALID_MANIFEST'
+  );
+
+  const parent = manifestWithFile('nested', 'parent');
+  const child = manifestWithFile('nested/file.txt', 'child').files[0];
+  assert.throws(
+    () => parseManifest(JSON.stringify({ ...parent, files: [...parent.files, child] })),
+    (error: unknown) => error instanceof Error && 'code' in error && error.code === 'INVALID_MANIFEST'
+  );
 });
