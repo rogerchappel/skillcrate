@@ -13,7 +13,7 @@ Agent teams keep rediscovering the same prompts, safety boundaries, review check
 ```bash
 npm install
 npm run build
-node dist/cli.js --help
+node dist/src/cli.js --help
 ```
 
 ## Quickstart
@@ -27,7 +27,7 @@ skillcrate index examples/fixtures .tmp/registry.json
 skillcrate check examples/fixtures/hello-skill --target claude-code
 ```
 
-During development, use `node dist/cli.js ...` after `npm run build`.
+During development, use `node dist/src/cli.js ...` after `npm run build`.
 
 ## Skill folder format
 
@@ -51,7 +51,7 @@ Packed crates are JSON documents with schema version `skillcrate/v1`, file conte
 ## Safety notes
 
 - Local-first by design: no telemetry, publishing, or external API calls.
-- Unpack rejects path traversal and absolute archive paths.
+- Unpack rejects path traversal, absolute paths, ambiguous destinations, and symlinked destination components.
 - Verify checks crates before writing files to disk.
 - Checksums are verified before files are written.
 - Compatibility reports encourage explicit attribution and safety boundaries.
@@ -75,4 +75,3 @@ MVP: metadata parsing, pack/unpack, registry export, compatibility checks, fixtu
 ## Release readiness
 
 Use [docs/release-readiness.md](docs/release-readiness.md) before opening release PRs or tagging a release.
-
