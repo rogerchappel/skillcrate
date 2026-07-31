@@ -48,6 +48,11 @@ Packed crates are JSON documents with schema version `skillcrate/v1`, file conte
 - `index <registry-root> <out.json>`: generate a registry index from fixture folders.
 - `check <skill-dir> --target <target>`: run compatibility checks for `generic`, `claude-code`, or `openai-agents`.
 
+Only `check` accepts an option; its `--target` value defaults to `generic`. Unknown options,
+missing option values, unsupported targets, and surplus arguments print a concise diagnostic
+and usage text, then exit with status 2. Command failures and unsuccessful verification or
+compatibility results exit with status 1; valid commands and help exit with status 0.
+
 ## Safety notes
 
 - Local-first by design: no telemetry, publishing, or external API calls.
