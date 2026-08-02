@@ -13,7 +13,7 @@ export async function ensureDir(dir: string): Promise<void> {
   await fs.mkdir(dir, { recursive: true });
 }
 
-export function sha256(content: string): string {
+export function sha256(content: string | Uint8Array): string {
   return createHash('sha256').update(content).digest('hex');
 }
 
@@ -66,6 +66,10 @@ export async function readText(file: string): Promise<string> {
   return fs.readFile(file, 'utf8');
 }
 
+export async function readBytes(file: string): Promise<Buffer> {
+  return fs.readFile(file);
+}
+
 export async function writeText(file: string, content: string): Promise<void> {
   await ensureDir(path.dirname(file));
   await fs.writeFile(file, content, 'utf8');
@@ -82,7 +86,7 @@ function assertWithinRoot(root: string, target: string): void {
   }
 }
 
-export async function writeTextWithinRoot(root: string, relativePath: string, content: string): Promise<void> {
+export async function writeBytesWithinRoot(root: string, relativePath: string, content: string | Uint8Array): Promise<void> {
   await ensureDir(root);
   const resolvedRoot = await fs.realpath(root);
   const parts = relativePath.split('/');
@@ -130,7 +134,7 @@ export async function writeTextWithinRoot(root: string, relativePath: string, co
       constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW,
       0o666
     );
-    await handle.writeFile(content, 'utf8');
+    await handle.writeFile(content);
   } catch (error) {
     if (isErrno(error, 'ELOOP')) {
       throw new SkillcrateError(`Unsafe archive destination: ${relativePath}`, 'UNSAFE_PATH');
@@ -139,4 +143,7 @@ export async function writeTextWithinRoot(root: string, relativePath: string, co
   } finally {
     await handle?.close();
   }
+}
+export async function writeTextWithinRoot(root: string, relativePath: string, content: string): Promise<void> {
+  return writeBytesWithinRoot(root, relativePath, content);
 }

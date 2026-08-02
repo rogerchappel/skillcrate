@@ -37,7 +37,19 @@ A skill folder contains:
 - `SKILL.md` — human-readable agent instructions.
 - Optional supporting files.
 
-Packed crates are JSON documents with schema version `skillcrate/v1`, file contents, byte counts, and SHA-256 checksums.
+Packed crates are JSON documents with schema version `skillcrate/v1`, file contents, byte counts, and SHA-256 checksums. UTF-8 files retain the original v1 representation:
+
+```json
+{ "path": "SKILL.md", "content": "# Example\n", "bytes": 10, "sha256": "..." }
+```
+
+Files that cannot be represented losslessly as UTF-8 use canonical base64 and declare the encoding:
+
+```json
+{ "path": "assets/icon.bin", "content": "AP+AUE5HDQo=", "encoding": "base64", "bytes": 8, "sha256": "..." }
+```
+
+`bytes` and `sha256` always describe the original decoded file bytes. Readers continue to interpret entries without `encoding` as UTF-8 text. Unknown encodings and malformed base64 are rejected.
 
 ## CLI
 

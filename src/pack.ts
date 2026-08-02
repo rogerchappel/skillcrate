@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { SkillcrateError } from './errors.js';
-import { listFiles, readText, safeRelativePath, sha256, validateArchivePaths, writeText } from './fs.js';
+import { decodeFileContent } from './file-content.js';
+import { listFiles, readBytes, readText, safeRelativePath, sha256, validateArchivePaths, writeText } from './fs.js';
 import { readMetadata, validateMetadata } from './metadata.js';
 import { SkillFile, SkillManifest } from './types.js';
 
@@ -8,8 +9,12 @@ export async function packSkill(skillDir: string): Promise<SkillManifest> {
   const metadata = await readMetadata(skillDir);
   const files: SkillFile[] = [];
   for (const rel of await listFiles(skillDir)) {
-    const content = await readText(path.join(skillDir, rel));
-    files.push({ path: safeRelativePath(rel), content, bytes: Buffer.byteLength(content), sha256: sha256(content) });
+    const content = await readBytes(path.join(skillDir, rel));
+    const text = content.toString('utf8');
+    const encoded = Buffer.from(text, 'utf8').equals(content)
+      ? { content: text }
+      : { content: content.toString('base64'), encoding: 'base64' as const };
+    files.push({ path: safeRelativePath(rel), ...encoded, bytes: content.byteLength, sha256: sha256(content) });
   }
   if (!files.some((file) => file.path === (metadata.entry ?? 'SKILL.md'))) {
     throw new SkillcrateError(`Entry file not found: ${metadata.entry ?? 'SKILL.md'}`, 'MISSING_ENTRY');
@@ -32,9 +37,12 @@ export function parseManifest(raw: string): SkillManifest {
     if (!file || typeof file !== 'object') throw new SkillcrateError('Manifest file entries must be objects', 'INVALID_MANIFEST');
     if (typeof file.path !== 'string') throw new SkillcrateError('Manifest file path must be a string', 'INVALID_MANIFEST');
     if (typeof file.content !== 'string') throw new SkillcrateError('Manifest file content must be a string', 'INVALID_MANIFEST');
+    if (file.encoding !== undefined && file.encoding !== 'base64') throw new SkillcrateError(`Unsupported file content encoding: ${String(file.encoding)}`, 'INVALID_MANIFEST');
     if (typeof file.bytes !== 'number' || !Number.isInteger(file.bytes) || file.bytes < 0) throw new SkillcrateError('Manifest file bytes must be a non-negative integer', 'INVALID_MANIFEST');
     if (typeof file.sha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(file.sha256)) throw new SkillcrateError('Manifest file sha256 must be a hex digest', 'INVALID_MANIFEST');
-    return { path: file.path, content: file.content, bytes: file.bytes, sha256: file.sha256 };
+    const parsedFile = { path: file.path, content: file.content, ...(file.encoding === 'base64' ? { encoding: file.encoding } : {}), bytes: file.bytes, sha256: file.sha256 };
+    decodeFileContent(parsedFile);
+    return parsedFile;
   });
   const paths = validateArchivePaths(files.map((file) => file.path));
   return {

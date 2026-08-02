@@ -23,6 +23,7 @@ export interface SkillManifest {
 export interface SkillFile {
   path: string;
   content: string;
+  encoding?: 'base64';
   bytes: number;
   sha256: string;
 }
