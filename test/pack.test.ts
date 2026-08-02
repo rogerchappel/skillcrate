@@ -42,6 +42,50 @@ test('round-trips a packed skill', async () => {
   }
 });
 
+test('round-trips binary assets byte-for-byte', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'skillcrate-binary-'));
+  const fixture = Buffer.from([0x00, 0xff, 0x80, 0x50, 0x4e, 0x47, 0x0d, 0x0a]);
+  try {
+    const skill = path.join(dir, 'skill');
+    await mkdir(skill);
+    await writeFile(path.join(skill, 'skillcrate.json'), JSON.stringify({
+      name: 'binary-fixture', version: '1.0.0', description: 'Binary round-trip fixture'
+    }));
+    await writeFile(path.join(skill, 'SKILL.md'), '# Binary fixture\n');
+    await writeFile(path.join(skill, 'asset.bin'), fixture);
+
+    const crate = path.join(dir, 'binary.skillcrate.json');
+    const manifest = await packSkillToFile(skill, crate);
+    const asset = manifest.files.find((file) => file.path === 'asset.bin');
+    assert.deepEqual(asset, {
+      path: 'asset.bin',
+      content: fixture.toString('base64'),
+      encoding: 'base64',
+      bytes: fixture.byteLength,
+      sha256: createHash('sha256').update(fixture).digest('hex')
+    });
+
+    const output = path.join(dir, 'out');
+    await unpackSkillFromFile(crate, output);
+    assert.deepEqual(await readFile(path.join(output, 'asset.bin')), fixture);
+    assert.equal(await readFile(path.join(output, 'SKILL.md'), 'utf8'), '# Binary fixture\n');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('rejects malformed and unknown file encodings', () => {
+  const manifest = manifestWithFile('asset.bin', 'AAAA');
+  assert.throws(
+    () => parseManifest(JSON.stringify({ ...manifest, files: [{ ...manifest.files[0], encoding: 'hex' }] })),
+    /Unsupported file content encoding: hex/
+  );
+  assert.throws(
+    () => parseManifest(JSON.stringify({ ...manifest, files: [{ ...manifest.files[0], encoding: 'base64', content: 'not base64!' }] })),
+    /Manifest file content is not valid base64/
+  );
+});
+
 test('unpacks ordinary nested files beneath the output directory', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'skillcrate-'));
   try {
