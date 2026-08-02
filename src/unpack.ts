@@ -1,5 +1,6 @@
 import { SkillcrateError } from './errors.js';
-import { ensureDir, readText, sha256, validateArchivePaths, writeTextWithinRoot } from './fs.js';
+import { decodeFileContent } from './file-content.js';
+import { ensureDir, readText, sha256, validateArchivePaths, writeBytesWithinRoot } from './fs.js';
 import { parseManifest } from './pack.js';
 import { SkillManifest } from './types.js';
 
@@ -8,8 +9,9 @@ export async function unpackSkill(manifest: SkillManifest, outputDir: string): P
   await ensureDir(outputDir);
   for (const [index, file] of manifest.files.entries()) {
     const rel = paths[index];
-    if (sha256(file.content) !== file.sha256) throw new SkillcrateError(`Checksum mismatch for ${rel}`, 'CHECKSUM_MISMATCH');
-    await writeTextWithinRoot(outputDir, rel, file.content);
+    const content = decodeFileContent(file);
+    if (content.byteLength !== file.bytes || sha256(content) !== file.sha256) throw new SkillcrateError(`Checksum mismatch for ${rel}`, 'CHECKSUM_MISMATCH');
+    await writeBytesWithinRoot(outputDir, rel, content);
   }
 }
 

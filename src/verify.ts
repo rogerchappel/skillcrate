@@ -1,4 +1,5 @@
 import { readText, safeRelativePath, sha256 } from './fs.js';
+import { decodeFileContent } from './file-content.js';
 import { parseManifest } from './pack.js';
 import { SkillManifest } from './types.js';
 
@@ -20,9 +21,10 @@ export function verifyCrate(manifest: SkillManifest): VerifyResult {
 
   for (const file of manifest.files) {
     const rel = safeRelativePath(file.path);
-    const actualBytes = Buffer.byteLength(file.content);
+    const content = decodeFileContent(file);
+    const actualBytes = content.byteLength;
     bytes += actualBytes;
-    if (file.bytes !== actualBytes || file.sha256 !== sha256(file.content)) {
+    if (file.bytes !== actualBytes || file.sha256 !== sha256(content)) {
       digestMismatches.push(rel);
     }
   }
