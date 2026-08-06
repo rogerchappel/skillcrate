@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { cpSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 function cli(...args: string[]) {
@@ -32,5 +35,25 @@ test('returns usage exit 2 for invalid command forms', () => {
     assert.equal(result.status, 2, args.join(' '));
     assert.match(result.stderr, diagnostic);
     assert.match(result.stderr, /Usage:/);
+  }
+});
+
+test('packs deterministically when the CLI output is inside the skill directory', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'skillcrate-cli-in-tree-'));
+  try {
+    const skill = path.join(dir, 'skill');
+    cpSync('examples/fixtures/hello-skill', skill, { recursive: true });
+    const output = path.join(skill, 'archive.skillcrate.json');
+
+    const first = cli('pack', skill, output);
+    assert.equal(first.status, 0, first.stderr);
+    const firstBytes = readFileSync(output);
+    const second = cli('pack', skill, output);
+    assert.equal(second.status, 0, second.stderr);
+
+    assert.deepEqual(readFileSync(output), firstBytes);
+    assert.ok(!JSON.parse(firstBytes.toString()).files.some((file: { path: string }) => file.path === 'archive.skillcrate.json'));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
 });

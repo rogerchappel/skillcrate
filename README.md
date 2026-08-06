@@ -54,7 +54,7 @@ Files that cannot be represented losslessly as UTF-8 use canonical base64 and de
 ## CLI
 
 - `inspect <skill-dir>`: print normalized metadata.
-- `pack <skill-dir> <out.skillcrate.json>`: create a portable crate.
+- `pack <skill-dir> <out.skillcrate.json>`: create a portable crate. The output may be inside the skill directory; the exact output file is excluded so repeated packs remain deterministic.
 - `verify <crate-file>`: validate metadata, safe paths, byte counts, and SHA-256 digests without unpacking.
 - `unpack <crate-file> <out-dir>`: verify checksums and restore files.
 - `index <registry-root> <out.json>`: generate a registry index from fixture folders.

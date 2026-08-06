@@ -42,6 +42,32 @@ test('round-trips a packed skill', async () => {
   }
 });
 
+test('repeatedly packs to an in-tree output without including that output', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'skillcrate-in-tree-'));
+  try {
+    const skill = path.join(dir, 'skill');
+    await mkdir(skill);
+    await writeFile(path.join(skill, 'skillcrate.json'), JSON.stringify({
+      name: 'in-tree-output', version: '1.0.0', description: 'In-tree output fixture'
+    }));
+    await writeFile(path.join(skill, 'SKILL.md'), '# In-tree output\n');
+    await writeFile(path.join(skill, 'archive.skillcrate.json.bak'), 'legitimate source file\n');
+    const crate = path.join(skill, 'archive.skillcrate.json');
+
+    const first = await packSkillToFile(skill, crate);
+    const firstBytes = await readFile(crate);
+    const second = await packSkillToFile(skill, crate);
+    const secondBytes = await readFile(crate);
+
+    assert.deepEqual(second, first);
+    assert.deepEqual(secondBytes, firstBytes);
+    assert.ok(second.files.some((file) => file.path === 'archive.skillcrate.json.bak'));
+    assert.ok(!second.files.some((file) => file.path === 'archive.skillcrate.json'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('round-trips binary assets byte-for-byte', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'skillcrate-binary-'));
   const fixture = Buffer.from([0x00, 0xff, 0x80, 0x50, 0x4e, 0x47, 0x0d, 0x0a]);

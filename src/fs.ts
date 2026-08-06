@@ -47,7 +47,8 @@ export function validateArchivePaths(inputs: string[]): string[] {
   return normalized;
 }
 
-export async function listFiles(root: string): Promise<string[]> {
+export async function listFiles(root: string, excludedFiles: ReadonlySet<string> = new Set()): Promise<string[]> {
+  const resolvedExcludedFiles = new Set([...excludedFiles].map((file) => path.resolve(file)));
   const out: string[] = [];
   async function walk(dir: string): Promise<void> {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
@@ -55,7 +56,7 @@ export async function listFiles(root: string): Promise<string[]> {
       const full = path.join(dir, entry.name);
       const rel = path.relative(root, full).replaceAll(path.sep, '/');
       if (entry.isDirectory()) await walk(full);
-      else if (entry.isFile()) out.push(rel);
+      else if (entry.isFile() && !resolvedExcludedFiles.has(path.resolve(full))) out.push(rel);
     }
   }
   await walk(root);

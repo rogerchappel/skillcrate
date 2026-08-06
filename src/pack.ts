@@ -5,10 +5,10 @@ import { listFiles, readBytes, readText, safeRelativePath, sha256, validateArchi
 import { readMetadata, validateMetadata } from './metadata.js';
 import { SkillFile, SkillManifest } from './types.js';
 
-export async function packSkill(skillDir: string): Promise<SkillManifest> {
+async function packSkillExcluding(skillDir: string, excludedFiles: ReadonlySet<string>): Promise<SkillManifest> {
   const metadata = await readMetadata(skillDir);
   const files: SkillFile[] = [];
-  for (const rel of await listFiles(skillDir)) {
+  for (const rel of await listFiles(skillDir, excludedFiles)) {
     const content = await readBytes(path.join(skillDir, rel));
     const text = content.toString('utf8');
     const encoded = Buffer.from(text, 'utf8').equals(content)
@@ -22,8 +22,12 @@ export async function packSkill(skillDir: string): Promise<SkillManifest> {
   return { schemaVersion: 'skillcrate/v1', metadata, files };
 }
 
+export async function packSkill(skillDir: string): Promise<SkillManifest> {
+  return packSkillExcluding(skillDir, new Set());
+}
+
 export async function packSkillToFile(skillDir: string, outputFile: string): Promise<SkillManifest> {
-  const manifest = await packSkill(skillDir);
+  const manifest = await packSkillExcluding(skillDir, new Set([outputFile]));
   await writeText(outputFile, `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
 }
