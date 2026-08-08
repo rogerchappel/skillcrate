@@ -19,15 +19,13 @@ node dist/src/cli.js --help
 ## Quickstart
 
 ```bash
-skillcrate inspect examples/fixtures/hello-skill
-skillcrate pack examples/fixtures/hello-skill .tmp/hello.skillcrate.json
-skillcrate verify .tmp/hello.skillcrate.json
-skillcrate unpack .tmp/hello.skillcrate.json .tmp/unpacked
-skillcrate index examples/fixtures .tmp/registry.json
-skillcrate check examples/fixtures/hello-skill --target claude-code
+node dist/src/cli.js inspect examples/fixtures/hello-skill
+node dist/src/cli.js pack examples/fixtures/hello-skill .tmp/hello.skillcrate.json
+node dist/src/cli.js verify .tmp/hello.skillcrate.json
+node dist/src/cli.js unpack .tmp/hello.skillcrate.json .tmp/unpacked
+node dist/src/cli.js index examples/fixtures .tmp/registry.json
+node dist/src/cli.js check examples/fixtures/hello-skill --target claude-code
 ```
-
-During development, use `node dist/src/cli.js ...` after `npm run build`.
 
 ## Skill folder format
 
