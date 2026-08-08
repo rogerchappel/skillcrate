@@ -30,8 +30,9 @@
     "pretest": "npm run build",
     "test": "node --test $(find dist/test -name \"*.test.js\" | sort)",
     "smoke": "npm run build && node dist/src/cli.js inspect examples/fixtures/hello-skill && rm -rf .tmp-smoke && node dist/src/cli.js pack examples/fixtures/hello-skill .tmp-smoke/hello.skillcrate.json && node dist/src/cli.js verify .tmp-smoke/hello.skillcrate.json && node dist/src/cli.js unpack .tmp-smoke/hello.skillcrate.json .tmp-smoke/unpacked && node dist/src/cli.js index examples/fixtures .tmp-smoke/registry.json && node dist/src/cli.js check examples/fixtures/hello-skill --target claude-code",
+    "docs:smoke": "node scripts/check-readme-quickstart.mjs",
     "package:smoke": "node scripts/check-package.mjs",
-    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
+    "release:check": "npm run check && npm test && npm run smoke && npm run docs:smoke && npm run package:smoke"
   },
   "keywords": [
     "agents",
