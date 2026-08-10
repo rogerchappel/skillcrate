@@ -43,6 +43,10 @@
   ],
   "author": "Roger Chappell",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "engines": {
     "node": ">=20"
   },
