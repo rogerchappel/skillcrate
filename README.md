@@ -10,10 +10,19 @@ Agent teams keep rediscovering the same prompts, safety boundaries, review check
 
 ## Install
 
+The latest source checkout can be built locally with:
+
 ```bash
 npm install
 npm run build
 node dist/src/cli.js --help
+```
+
+After a version is published to npm, install the CLI globally with:
+
+```bash
+npm install -g skillcrate
+skillcrate --help
 ```
 
 ## Quickstart
@@ -84,7 +93,7 @@ bash scripts/validate.sh
 
 ## Status
 
-MVP: metadata parsing, pack/unpack, registry export, compatibility checks, fixtures, tests, and CLI smoke.
+MVP: metadata parsing, pack/unpack, registry export, compatibility checks, fixtures, tests, and CLI smoke. The source checkout is usable now; the global install command requires a published npm release.
 
 
 ## Release readiness
