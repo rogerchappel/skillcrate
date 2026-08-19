@@ -6,7 +6,7 @@ import { listFiles, pathExists, sha256, writeText } from './fs.js';
 export async function buildRegistry(rootDir: string, generatedAt = new Date().toISOString()): Promise<RegistryIndex> {
   const entries: RegistryEntry[] = [];
   for (const rel of await listFiles(rootDir)) {
-    if (!rel.endsWith('skillcrate.json')) continue;
+    if (path.basename(rel) !== 'skillcrate.json') continue;
     const skillDir = path.join(rootDir, path.dirname(rel));
     if (!(await pathExists(path.join(skillDir, 'SKILL.md')))) continue;
     const manifest = await packSkill(skillDir);
