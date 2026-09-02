@@ -49,6 +49,8 @@ jobs:
         run: node /tmp/releasebox/bin/releasebox.js notes . > RELEASE_NOTES.md
       - name: Publish package to npm
         run: npm publish "${{ steps.package.outputs.file }}" --access public --provenance
+      - name: Verify published package
+        run: npm run release:verify -- --registry "${GITHUB_REF_NAME}"
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
