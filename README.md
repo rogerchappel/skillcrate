@@ -91,6 +91,8 @@ npm run smoke
 bash scripts/validate.sh
 ```
 
+Tagged releases are published with npm provenance. Before GitHub release creation, automation verifies the exact tagged version through the public npm registry, installs it in isolation, and executes the packaged CLI. See `docs/release-readiness.md` for the release gate and recovery steps.
+
 ## Status
 
 MVP: metadata parsing, pack/unpack, registry export, compatibility checks, fixtures, tests, and CLI smoke. The source checkout is usable now; the global install command requires a published npm release.
