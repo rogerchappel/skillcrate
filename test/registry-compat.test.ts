@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { buildRegistry, checkCompatibility } from '../src/index.js';
+import { buildRegistry, checkCompatibility, writeRegistry } from '../src/index.js';
 
 test('builds a deterministic registry index from fixture folders', async () => {
   const registry = await buildRegistry('examples/fixtures', '2026-05-05T00:00:00.000Z');
@@ -22,6 +22,25 @@ test('indexes only the canonical metadata marker in each skill directory', async
   assert.deepEqual(registry.entries.map(({ name, cratePath }) => ({ name, cratePath })), [
     { name: 'hello-agent-skill', cratePath: 'hello-skill' },
   ]);
+});
+
+test('excludes an in-tree registry output from first and repeated indexing', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'skillcrate-registry-'));
+  const skill = path.join(root, 'hello-skill');
+  const output = path.join(skill, 'registry.json');
+  await cp('examples/fixtures/hello-skill', skill, { recursive: true });
+  await writeFile(path.join(skill, 'notes.txt'), 'preserve me\n');
+
+  const first = await writeRegistry(root, output);
+  const firstBytes = await readFile(output);
+  const second = await writeRegistry(root, output);
+  const secondBytes = await readFile(output);
+
+  assert.deepEqual(secondBytes, firstBytes);
+  assert.deepEqual(second, first);
+  assert.equal(first.entries[0].fileCount, 4);
+  assert.equal(await readFile(path.join(skill, 'notes.txt'), 'utf8'), 'preserve me\n');
+  assert.equal(JSON.stringify(first).includes('registry.json'), false);
 });
 
 test('reports compatibility warnings and errors', async () => {
