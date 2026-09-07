@@ -64,7 +64,7 @@ Files that cannot be represented losslessly as UTF-8 use canonical base64 and de
 - `pack <skill-dir> <out.skillcrate.json>`: create a portable crate. The output may be inside the skill directory; the exact output file is excluded so repeated packs remain deterministic.
 - `verify <crate-file>`: validate metadata, safe paths, byte counts, and SHA-256 digests without unpacking.
 - `unpack <crate-file> <out-dir>`: verify checksums and restore files.
-- `index <registry-root> <out.json>`: generate a registry index from skill folders containing the canonical `skillcrate.json` metadata marker. Similarly named archives and backups are ignored.
+- `index <registry-root> <out.json>`: generate a registry index from skill folders containing the canonical `skillcrate.json` metadata marker. Similarly named archives and backups are ignored. The output may be anywhere under the registry root, including inside a skill directory; that exact file is excluded, and unchanged consecutive runs are byte-identical.
 - `check <skill-dir> --target <target>`: run compatibility checks for `generic`, `claude-code`, or `openai-agents`.
 
 Only `check` accepts an option; its `--target` value defaults to `generic`. Unknown options,
