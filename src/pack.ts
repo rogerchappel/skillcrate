@@ -22,8 +22,8 @@ async function packSkillExcluding(skillDir: string, excludedFiles: ReadonlySet<s
   return { schemaVersion: 'skillcrate/v1', metadata, files };
 }
 
-export async function packSkill(skillDir: string): Promise<SkillManifest> {
-  return packSkillExcluding(skillDir, new Set());
+export async function packSkill(skillDir: string, excludedFiles: ReadonlySet<string> = new Set()): Promise<SkillManifest> {
+  return packSkillExcluding(skillDir, excludedFiles);
 }
 
 export async function packSkillToFile(skillDir: string, outputFile: string): Promise<SkillManifest> {
